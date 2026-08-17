@@ -2,8 +2,6 @@
 
 A classical (non-deep-learning) digital image processing pipeline that segments the **nucleus** of a white blood cell from a microscope image and classifies the cell into one of **five WBC types** — **Basophil, Eosinophil, Lymphocyte, Monocyte, Neutrophil** — using hand-engineered features (shape, texture, gradient) and a **Support Vector Machine (SVM)** classifier.
 
-This project was built as a Digital Image Processing (DIP) lab assignment (`Assignment#002.docx`, 6th Semester) and is implemented entirely in a single Jupyter notebook: [`AssignmentT2.ipynb`](AssignmentT2.ipynb).
-
 ---
 
 ## Table of Contents
@@ -62,9 +60,8 @@ A high-level flowchart of the process is included as [`flowchart.png`](flowchart
 
 ```
 White Blood Cell Analysis & Classification/
-├── AssignmentT2.ipynb        # Main notebook — the entire pipeline (preprocessing, feature
+├── main.ipynb        # Main notebook — the entire pipeline (preprocessing, feature
 │                              # extraction, training, evaluation) lives here
-├── Assignment#002.docx       # Original lab assignment brief/instructions
 ├── flowchart.png             # Visual flowchart of the processing pipeline
 ├── wbc_data/                 # Image dataset (JPEG, 575×575, RGB-encoded but read as grayscale)
 │   ├── Train/                # 100 images per class — used to train the SVM
@@ -172,8 +169,6 @@ I1 = cv2.imread(".../Test/Basophil/Basophil_1.jpg", 0)
 I2 = cv2.imread(".../Test/Eosinophil/Eosinophil_2.jpg", 0)
 ...
 ```
-> ⚠️ Paths are **hardcoded absolute Windows paths** (`E:/Documents/6th Semester/DIP/Lab/Assignment#002/...`) — see [Known Issues](#known-issues--limitations).
-
 ### 3. Butterworth High-Pass Filter
 `butterworth_high_pass(D0, n, rows, cols)` builds a frequency-domain Butterworth high-pass filter mask `H` of shape `(rows, cols)`:
 - Builds a distance-from-center grid `D` using `np.meshgrid`.
@@ -225,8 +220,6 @@ A demonstration cell (Cell 14) visualizes the original vs. extracted-nucleus ima
 - Divides the image into `cell_size × cell_size` (default 8×8) cells and accumulates a 9-bin orientation histogram per cell, weighted by gradient magnitude.
 - Groups cells into overlapping `block_size × block_size` (default 2×2) blocks, concatenates their histograms, and L2-normalizes each block (`+1e-6` epsilon for stability).
 - Flattens all normalized block vectors into the final HOG feature vector — this is a manual re-implementation of the classic **Dalal & Triggs HOG** algorithm (as used in pedestrian detection), applied here to capture nucleus/cell edge-orientation structure.
-
-> Note: this function is defined under the notebook's "Hough Transformation" markdown heading, but the actual implementation is HOG, not the Hough transform — the section title appears to be a labeling artifact from the original assignment template.
 
 ### 10. Nucleus Shape Features
 `extract_shape_features(nucleus_img)` — classic **contour-based morphometric features** using OpenCV:
@@ -343,8 +336,8 @@ pip install opencv-python numpy matplotlib scikit-learn seaborn joblib
 ```
 
 ### Steps
-1. Open [`AssignmentT2.ipynb`](AssignmentT2.ipynb) in Jupyter/VS Code.
-2. **Update the hardcoded dataset paths** in Cell 3, Cell 26, and Cell 32 to point at your local `wbc_data/Train`, `wbc_data/Test` (and optionally `wbc_data/Train_small`) folders — the notebook currently hardcodes an author-specific absolute path (`E:/Documents/6th Semester/DIP/Lab/Assignment#002/...`).
+1. Open [`main.ipynb`](main.ipynb) in Jupyter/VS Code.
+2. **Update the hardcoded dataset paths** in Cell 3, Cell 26, and Cell 32 to point at your local `wbc_data/Train`, `wbc_data/Test` (and optionally `wbc_data/Train_small`) folders — the notebook currently hardcodes an author-specific absolute path.
 3. Run all cells top to bottom:
    - Cells 1–22 define the preprocessing/feature-extraction pipeline and can be run without any dataset (Cell 14 just demonstrates nucleus extraction on 5 sample images).
    - Cell 26 builds the training dataset (this iterates over all 500 training images and is the most time-consuming step, since `CCA_8`, `local_binary_pattern`, and `extract_hog` are all pure-Python/NumPy pixel-loop implementations — expect this to take a while per image), trains the SVM, and prints validation metrics.
@@ -378,7 +371,7 @@ pip install opencv-python numpy matplotlib scikit-learn seaborn joblib
 
 ## Known Issues & Limitations
 
-- **Hardcoded absolute paths:** Dataset paths in Cells 3, 26, and 32 are hardcoded to a specific machine (`E:/Documents/6th Semester/DIP/Lab/Assignment#002/...`) and must be edited before the notebook will run elsewhere.
+- **Hardcoded absolute paths:** Dataset paths in Cells 3, 26, and 32 are hardcoded to a specific machine and must be edited before the notebook will run elsewhere.
 - **No model artifacts committed:** `wbc_classifier_model.pkl`, `wbc_scaler.pkl`, and `wbc_label_map.json` are not present in the repository — they are generated only after running the training cells locally.
 - **Performance:** All core algorithms (connected-component labeling, LBP, HOG) are implemented with raw Python `for` loops over pixels/cells rather than vectorized NumPy or OpenCV built-ins, making feature extraction slow, especially over the full 500-image training set.
 - **Nucleus-centering assumption:** `CCA_8`'s nucleus-selection heuristic assumes the nucleus is at or near the image center (`a[x/2, y/2]`) with a bottom-right fallback scan; this can misidentify the nucleus on images where the cell/nucleus is off-center or where multiple nuclei-like blobs exist near the center.
