@@ -2,7 +2,7 @@
 
 A classical (non-deep-learning) digital image processing pipeline that segments the **nucleus** of a white blood cell from a microscope image and classifies the cell into one of **five WBC types** — **Basophil, Eosinophil, Lymphocyte, Monocyte, Neutrophil** — using hand-engineered features (shape, texture, gradient) and a **Support Vector Machine (SVM)** classifier.
 
----
+----
 
 ## Table of Contents
 
